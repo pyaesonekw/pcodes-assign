@@ -40,9 +40,26 @@ No data is uploaded to any server.
 
 ## Live demo
 
-https://pyaesone.pskw.github.io/pcodes-assign
+**Correct URL (after enabling Pages):** https://pyaesonekw.github.io/pcodes-assign
 
-(If the page above does not load, the correct current Pages URL after enabling GitHub Pages on the repo is `https://pyaesonekw.github.io/pcodes-assign`.)
+### How to enable GitHub Pages (fixes "This Connection Is Not Private" / certificate errors)
+
+1. Go to your repo: https://github.com/pyaesonekw/pcodes-assign
+2. Click **Settings** (top right) → **Pages** (in the left sidebar under "Code and automation").
+3. Under "Build and deployment":
+   - **Source**: select **Deploy from a branch**
+   - **Branch**: `main`
+   - **Folder**: `/ (root)`
+4. Click **Save**.
+
+GitHub will build and publish the site (usually 30–90 seconds). The first time it may take a bit longer. Once live, the URL above will show the app with a valid certificate.
+
+**Why you saw the Safari warning:**
+- You tried `https://pyaesone.pskw.github.io/...` (from your Gmail address).
+- Your actual GitHub username is `pyaesonekw`.
+- Even the correct hostname shows this error (or a 404) until Pages is explicitly enabled in the repo settings. GitHub only serves a valid TLS certificate for published Pages sites.
+
+You can test everything right now by opening the `index.html` file directly in any browser (double-click it). No server needed.
 
 ## Tech
 
