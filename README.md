@@ -40,26 +40,70 @@ No data is uploaded to any server.
 
 ## Live demo
 
-**Correct URL (after enabling Pages):** https://pyaesonekw.github.io/pcodes-assign
+**The only URL that works with GitHub's default certificate right now:**
 
-### How to enable GitHub Pages (fixes "This Connection Is Not Private" / certificate errors)
+https://pyaesonekw.github.io/pcodes-assign
 
-1. Go to your repo: https://github.com/pyaesonekw/pcodes-assign
-2. Click **Settings** (top right) → **Pages** (in the left sidebar under "Code and automation").
-3. Under "Build and deployment":
-   - **Source**: select **Deploy from a branch**
-   - **Branch**: `main`
-   - **Folder**: `/ (root)`
-4. Click **Save**.
+### Step-by-step: Enable GitHub Pages (do this first)
 
-GitHub will build and publish the site (usually 30–90 seconds). The first time it may take a bit longer. Once live, the URL above will show the app with a valid certificate.
+1. Go to the repository: https://github.com/pyaesonekw/pcodes-assign
+2. Click the **Settings** tab (near the top).
+3. In the left sidebar, click **Pages**.
+4. Under "Build and deployment":
+   - **Source**: Select **Deploy from a branch**
+   - **Branch**: Select `main`
+   - **Folder**: Select `/ (root)`
+5. Click **Save**.
 
-**Why you saw the Safari warning:**
-- You tried `https://pyaesone.pskw.github.io/...` (from your Gmail address).
-- Your actual GitHub username is `pyaesonekw`.
-- Even the correct hostname shows this error (or a 404) until Pages is explicitly enabled in the repo settings. GitHub only serves a valid TLS certificate for published Pages sites.
+GitHub will start publishing the site. This usually takes 30–90 seconds (sometimes longer on first publish). Refresh the URL above until you see the app instead of the 404.
 
-You can test everything right now by opening the `index.html` file directly in any browser (double-click it). No server needed.
+Once published, GitHub automatically uses its `*.github.io` wildcard certificate, which is valid for `pyaesonekw.github.io`.
+
+### Why `https://pyaesone.pskw.github.io/pcodes-assign` gives an SSL error
+
+Your diagnosis is **correct**.
+
+- GitHub serves a single wildcard certificate for `*.github.io` (and a few related names) issued by Let's Encrypt.
+- This certificate only matches **one level** of subdomain: `yourusername.github.io`.
+- It does **not** match multi-level names like `pyaesone.pskw.github.io`.
+- Additionally, GitHub usernames cannot contain dots, so `pyaesone.pskw` is not a valid GitHub username.
+- When you visit the wrong hostname, GitHub's servers present the `*.github.io` certificate, Safari detects the name mismatch, and shows the scary "This Connection Is Not Private" warning.
+
+There is no way to make `pyaesone.pskw.github.io` work as a GitHub Pages site using GitHub's default infrastructure and certificates.
+
+### If you want a custom domain (e.g. something with "pyaesone.pskw")
+
+You can use a real domain you own. GitHub will automatically provision a free Let's Encrypt certificate for it.
+
+**Recommended approach with Cloudflare (or any DNS provider):**
+
+1. Register a domain you control (examples: `pcodes.pskw.dev`, `pyaesone.pskw.app`, `pcodes-assign.com` — very cheap).
+2. In your DNS provider (Cloudflare is excellent and free):
+   - Create a **CNAME** record:
+     - Name/Host: `pcodes` (or `app`, `pcodes-assign`, whatever you want)
+     - Target/Value: `pyaesonekw.github.io`
+     - **Important (Cloudflare)**: Set Proxy status to **DNS only** (grey cloud) at least initially. Proxied (orange) can break GitHub's domain verification.
+3. Go back to your repo → **Settings → Pages**.
+4. Under "Custom domain", enter your full subdomain (e.g. `pcodes.pskw.dev`) and click **Save**.
+5. Wait for GitHub to verify the domain (check the DNS records it tells you to add if needed — usually just the CNAME).
+6. Once verified, check the box **Enforce HTTPS**. GitHub will obtain and install the certificate for your custom domain.
+
+After this, your site will be available at the nice custom URL with a valid certificate, and you can update the README, share links, etc.
+
+You can keep both the `pyaesonekw.github.io` URL and the custom domain active.
+
+### Quick testing (no GitHub Pages required)
+
+Double-click `index.html` from the folder on your computer. The entire app (uploads, spatial join, Excel/CSV output, progress, everything) runs locally in the browser with no server.
+
+### What won't work
+
+- Renaming the repository (`pcodes-assign`) only changes the path part of the URL, not the subdomain problem.
+- You cannot "claim" `pyaesone.pskw.github.io` through GitHub Pages.
+
+I have already updated the README in the repository with the correct URL and these instructions.
+
+Let me know which path you want to take (standard GitHub URL vs. custom domain) and I can help update links, add a `CNAME` file if needed, or make any other changes.
 
 ## Tech
 
