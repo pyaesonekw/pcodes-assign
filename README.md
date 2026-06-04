@@ -2,6 +2,8 @@
 
 Browser-based spatial join tool that assigns P-codes and any other attributes from GeoJSON polygon boundaries to your point data (CSV or Excel) — entirely in the browser. No backend, no server, no data leaves your computer.
 
+**Live demo:** https://pyaesonekw.github.io/pcodes-assign/
+
 ## How to use
 
 1. **Upload data file**  
@@ -37,43 +39,6 @@ No data is uploaded to any server.
 - Handles 10,000+ rows smoothly.
 - Processing uses chunks of 500 rows with `setTimeout` yielding so the UI never freezes.
 - Only numeric lat/lon values are used for the point-in-polygon test.
-
-## Live demo
-
-**Live site:** https://pyaesonekw.github.io/pcodes-assign
-
-The app is now live on GitHub Pages. It uses a proper single-level subdomain (`pyaesonekw.github.io`) that is fully covered by GitHub's `*.github.io` wildcard SSL certificate. "Enforce HTTPS" is enabled by default.
-
-### How the site was enabled
-
-1. In the repository, went to **Settings → Pages**.
-2. Set Source to **Deploy from a branch**, Branch: `main`, Folder: `/ (root)`.
-3. Saved — GitHub built and published the site successfully.
-
-### If you make changes later (re-deploy)
-
-Any push to the `main` branch will automatically trigger a new build and deployment (usually within a minute).
-
-### Using a custom domain (optional)
-
-If you want a nicer URL involving "pyaesone.pskw" (or any other branding), you can configure a custom domain:
-
-- Register a real domain you control (e.g. `pcodes.pskw.dev`).
-- Add a CNAME DNS record pointing your subdomain to `pyaesonekw.github.io` (use DNS-only mode if using Cloudflare).
-- In repo **Settings → Pages**, enter the custom domain and save.
-- GitHub will automatically get a free Let's Encrypt certificate for it. Enable "Enforce HTTPS" once verified.
-
-See GitHub's docs for full details on custom domains.
-
-### Local testing
-
-You can always open `index.html` directly from your computer for instant testing — the whole app (including the spatial join) runs 100% in the browser.
-
-### Note on the old URL
-
-`https://pyaesone.pskw.github.io/pcodes-assign` does not work and will continue to show certificate errors. GitHub Pages only supports single-level subdomains under the actual username (`pyaesonekw`), and GitHub usernames cannot contain dots.
-
-The correct live URL is the one listed above.
 
 ## Tech
 
