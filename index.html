@@ -1,1 +1,1213 @@
-__FULL_INDEX_HTML__
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>pcodes-assign • Spatial join in the browser</title>
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-dark: #4338ca;
+      --success: #16a34a;
+      --success-light: #f0fdf4;
+      --error: #dc2626;
+      --error-light: #fef2f2;
+      --border: #e5e7eb;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 24px 16px 48px;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .logo svg { width: 32px; height: 32px; }
+    h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin: 0 0 4px;
+      letter-spacing: -0.02em;
+    }
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 15px;
+      margin: 0;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .step-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .step-number {
+      width: 26px;
+      height: 26px;
+      border-radius: 999px;
+      background: #f1f5f9;
+      color: #475569;
+      font-weight: 600;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .step-card.active .step-number {
+      background: var(--primary);
+      color: white;
+    }
+    .step-card.completed .step-number {
+      background: var(--success);
+      color: white;
+    }
+    .step-card.inactive {
+      opacity: 0.55;
+      pointer-events: none;
+    }
+    .step-card.inactive .step-number {
+      background: #f1f5f9;
+      color: #94a3b8;
+    }
+    h2 {
+      font-size: 15px;
+      font-weight: 600;
+      margin: 0;
+      color: #1e2937;
+    }
+    .step-card h2 { font-size: 15px; }
+    .dropzone {
+      border: 2px dashed var(--border);
+      border-radius: 10px;
+      padding: 28px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.1s ease;
+      background: #fafbfc;
+    }
+    .dropzone:hover, .dropzone.dragover {
+      border-color: var(--primary);
+      background: #f8fafc;
+    }
+    .dropzone .icon {
+      font-size: 22px;
+      margin-bottom: 8px;
+      color: #64748b;
+    }
+    .dropzone p {
+      margin: 4px 0;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+    .dropzone .hint {
+      font-size: 12px;
+      color: #94a3b8;
+    }
+    .file-info {
+      margin-top: 14px;
+      padding: 10px 12px;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .file-info .meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .file-name {
+      font-weight: 600;
+      color: #1e2937;
+    }
+    .badge {
+      display: inline-block;
+      font-size: 11px;
+      padding: 1px 7px;
+      border-radius: 999px;
+      background: #e0e7ff;
+      color: #4338ca;
+      font-weight: 500;
+    }
+    .row-count {
+      color: var(--text-muted);
+      font-size: 12px;
+    }
+    .clear-btn {
+      background: none;
+      border: 1px solid var(--border);
+      color: #64748b;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      line-height: 1.1;
+    }
+    .clear-btn:hover { background: #f1f5f9; color: #334155; }
+    .headers {
+      margin-top: 10px;
+    }
+    .headers-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #64748b;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+    .badge-col {
+      font-size: 11px;
+      background: #f1f5f9;
+      color: #475569;
+      padding: 2px 8px;
+      border-radius: 4px;
+      border: 1px solid #e2e8f0;
+      white-space: nowrap;
+    }
+    .select-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 8px;
+    }
+    .select-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #475569;
+      margin-bottom: 4px;
+    }
+    select {
+      width: 100%;
+      padding: 9px 10px;
+      font-size: 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: white;
+      color: var(--text);
+      appearance: none;
+      background-image: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 fill=%22none%22 viewBox=%220 0 12 12%22%3E%3Cpath stroke=%22%2364748b%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22 stroke-width=%221.5%22 d=%22M2.5 4.5l3.5 3.5 3.5-3.5%22/%3E%3C/svg%3E');
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      background-size: 12px;
+    }
+    select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(79,70,229,0.1);
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 18px;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.1s ease;
+      text-decoration: none;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+    .btn-primary:hover:not(:disabled) { background: var(--primary-dark); }
+    .btn-primary:disabled {
+      background: #cbd5e1;
+      color: #64748b;
+      cursor: not-allowed;
+    }
+    .btn-secondary {
+      background: #f1f5f9;
+      color: #334155;
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover { background: #e2e8f0; }
+    .btn-success {
+      background: var(--success);
+      color: white;
+    }
+    .btn-success:hover { background: #15803d; }
+    .progress-wrap {
+      margin: 12px 0 4px;
+    }
+    .progress {
+      height: 8px;
+      background: #e2e8f0;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-bottom: 6px;
+    }
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), #6366f1);
+      width: 0%;
+      transition: width 0.2s ease;
+    }
+    .progress-text {
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+    }
+    .success-box {
+      background: var(--success-light);
+      border: 1px solid #bbf7d0;
+      color: #166534;
+      padding: 14px 16px;
+      border-radius: 10px;
+      margin-top: 12px;
+    }
+    .success-box .title {
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+    .error-box {
+      background: var(--error-light);
+      border: 1px solid #fecaca;
+      color: #991b1b;
+      padding: 12px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin: 10px 0;
+    }
+    .info-text {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin: 8px 0 0;
+    }
+    .stats {
+      display: flex;
+      gap: 16px;
+      font-size: 13px;
+      margin-top: 6px;
+    }
+    .stat {
+      background: white;
+      border: 1px solid var(--border);
+      padding: 2px 9px;
+      border-radius: 6px;
+      color: #475569;
+    }
+    .footer {
+      text-align: center;
+      font-size: 12px;
+      color: #94a3b8;
+      margin-top: 32px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+    .privacy {
+      font-size: 11px;
+      background: #f1f5f9;
+      padding: 6px 10px;
+      border-radius: 6px;
+      display: inline-block;
+      margin-top: 8px;
+    }
+    .demo-btn {
+      font-size: 12px;
+      padding: 4px 10px;
+      margin-top: 6px;
+    }
+    .step-card {
+      transition: opacity 0.15s ease, box-shadow 0.15s ease;
+    }
+    .step-card.active {
+      box-shadow: 0 4px 12px -2px rgb(0 0 0 / 0.08);
+      border-color: #c7d2fe;
+    }
+    .muted { color: var(--text-muted); }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="2" width="28" height="28" rx="6" fill="#4f46e5"/>
+          <path d="M9 10 L16 23 L23 10" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="16" cy="17" r="3.5" fill="#4f46e5" stroke="white" stroke-width="2"/>
+        </svg>
+        <h1>pcodes-assign</h1>
+      </div>
+      <p class="subtitle">Assign P-codes &amp; boundary attributes to point data — 100% in your browser</p>
+    </header>
+
+    <!-- STEP 1: Data -->
+    <div class="card step-card" id="step1">
+      <div class="step-header">
+        <div class="step-number">1</div>
+        <h2>Upload data file</h2>
+      </div>
+      <div id="data-dropzone" class="dropzone">
+        <div class="icon">📄</div>
+        <p><strong>Drop CSV or Excel file here</strong></p>
+        <p class="hint">.csv, .xlsx, .xls — first row must be headers</p>
+        <input type="file" id="data-file" accept=".csv,.xlsx,.xls" hidden>
+      </div>
+      <div id="data-info" class="file-info" style="display:none;">
+        <div class="meta">
+          <span class="file-name" id="data-filename"></span>
+          <span class="badge" id="data-format"></span>
+          <span class="row-count" id="data-rowcount"></span>
+        </div>
+        <button class="clear-btn" onclick="clearData()">Change</button>
+      </div>
+      <div id="data-headers" class="headers" style="display:none;">
+        <div class="headers-label">Detected columns</div>
+        <div class="badges" id="data-headers-list"></div>
+      </div>
+      <button id="demo-data-btn" class="btn btn-secondary demo-btn" onclick="loadDemoData()">Load demo data</button>
+    </div>
+
+    <!-- STEP 2: GeoJSON -->
+    <div class="card step-card inactive" id="step2">
+      <div class="step-header">
+        <div class="step-number">2</div>
+        <h2>Upload GeoJSON boundary file</h2>
+      </div>
+      <div id="geo-dropzone" class="dropzone">
+        <div class="icon">🗺️</div>
+        <p><strong>Drop GeoJSON file here</strong></p>
+        <p class="hint">.geojson or .json — any polygon admin boundaries</p>
+        <input type="file" id="geo-file" accept=".geojson,.json" hidden>
+      </div>
+      <div id="geo-info" class="file-info" style="display:none;">
+        <div class="meta">
+          <span class="file-name" id="geo-filename"></span>
+          <span class="badge" id="geo-count"></span>
+        </div>
+        <button class="clear-btn" onclick="clearGeo()">Change</button>
+      </div>
+      <div id="geo-props" class="headers" style="display:none;">
+        <div class="headers-label">Properties that will be appended to every row</div>
+        <div class="badges" id="geo-props-list"></div>
+      </div>
+    </div>
+
+    <!-- STEP 3: Mapping -->
+    <div class="card step-card inactive" id="step3">
+      <div class="step-header">
+        <div class="step-number">3</div>
+        <h2>Select coordinate columns</h2>
+      </div>
+      <div class="select-group">
+        <div>
+          <label for="lat-col">Latitude column</label>
+          <select id="lat-col">
+            <option value="">-- Select latitude column --</option>
+          </select>
+        </div>
+        <div>
+          <label for="lon-col">Longitude column</label>
+          <select id="lon-col">
+            <option value="">-- Select longitude column --</option>
+          </select>
+        </div>
+      </div>
+      <p class="info-text">Values will be parsed as numbers. Rows with empty or non-numeric coordinates will receive empty boundary columns.</p>
+    </div>
+
+    <!-- STEP 4: Run -->
+    <div class="card step-card inactive" id="step4">
+      <div class="step-header">
+        <div class="step-number">4</div>
+        <h2>Run spatial join</h2>
+      </div>
+      <p class="info-text" style="margin-top:0;">For each row, a point is created from lat/lon and tested against every polygon using <span class="mono">turf.booleanPointInPolygon</span>. All GeoJSON feature properties are added to matching rows.</p>
+
+      <div style="margin-top:14px;">
+        <button id="assign-btn" class="btn btn-primary" onclick="runSpatialJoin()" disabled>
+          Assign
+        </button>
+      </div>
+
+      <div id="progress-section" style="display:none; margin-top:14px;">
+        <div class="progress-wrap">
+          <div class="progress"><div class="progress-bar" id="progress-bar"></div></div>
+          <div class="progress-text">
+            <span id="progress-label">Processing...</span>
+            <span id="progress-pct">0%</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="error-box" class="error-box" style="display:none;"></div>
+    </div>
+
+    <!-- STEP 5: Result -->
+    <div class="card step-card inactive" id="step5" style="display:none;">
+      <div class="step-header">
+        <div class="step-number">5</div>
+        <h2>Result</h2>
+      </div>
+      <div id="success-box" class="success-box">
+        <div class="title">✓ Spatial join complete</div>
+        <div id="success-message"></div>
+        <div class="stats" id="success-stats"></div>
+      </div>
+      <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
+        <button class="btn btn-success" onclick="downloadResultAgain()">Download result again</button>
+        <button class="btn btn-secondary" onclick="resetAll()">Start over</button>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div>All processing happens in your browser. No data is uploaded to any server.</div>
+      <div class="privacy">Works in Chrome and Edge • 10,000+ rows supported via chunked processing</div>
+    </div>
+  </div>
+
+  <!-- CDNs -->
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5/papaparse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@turf/turf@7/turf.min.js"></script>
+
+  <script>
+    // State
+    let dataRows = [];
+    let dataHeaders = [];
+    let dataFilename = '';
+    let inputFormat = 'csv'; // 'csv' | 'excel'
+
+    let geoFeatures = [];
+    let geoPropKeys = [];
+    let geoFilename = '';
+    let geoFeatureCount = 0;
+
+    let latCol = '';
+    let lonCol = '';
+
+    let outputRows = [];
+    let lastOutFilename = '';
+    let lastOutIsExcel = false;
+
+    let processing = false;
+
+    // Elements
+    const step1 = document.getElementById('step1');
+    const step2 = document.getElementById('step2');
+    const step3 = document.getElementById('step3');
+    const step4 = document.getElementById('step4');
+    const step5 = document.getElementById('step5');
+
+    const dataDrop = document.getElementById('data-dropzone');
+    const dataInput = document.getElementById('data-file');
+    const dataInfo = document.getElementById('data-info');
+    const dataNameEl = document.getElementById('data-filename');
+    const dataFmtEl = document.getElementById('data-format');
+    const dataCountEl = document.getElementById('data-rowcount');
+    const dataHeadersWrap = document.getElementById('data-headers');
+    const dataHeadersList = document.getElementById('data-headers-list');
+
+    const geoDrop = document.getElementById('geo-dropzone');
+    const geoInput = document.getElementById('geo-file');
+    const geoInfo = document.getElementById('geo-info');
+    const geoNameEl = document.getElementById('geo-filename');
+    const geoCountEl = document.getElementById('geo-count');
+    const geoPropsWrap = document.getElementById('geo-props');
+    const geoPropsList = document.getElementById('geo-props-list');
+
+    const latSel = document.getElementById('lat-col');
+    const lonSel = document.getElementById('lon-col');
+    const assignBtn = document.getElementById('assign-btn');
+
+    const progressSection = document.getElementById('progress-section');
+    const progressBar = document.getElementById('progress-bar');
+    const progressLabel = document.getElementById('progress-label');
+    const progressPct = document.getElementById('progress-pct');
+    const errorBox = document.getElementById('error-box');
+
+    const successBox = document.getElementById('success-box');
+    const successMsg = document.getElementById('success-message');
+    const successStats = document.getElementById('success-stats');
+
+    // Demo data (small, self-contained)
+    const DEMO_CSV = `id,settlement,latitude,longitude,population
+1,Alpha,16.8123,96.1521,12400
+2,Beta,16.7911,96.1788,8700
+3,Gamma,16.8455,96.1014,23100
+4,Delta,16.7234,96.2102,5400
+5,Epsilon,16.8801,96.1339,9800`;
+
+    const DEMO_GEOJSON = {
+      "type": "FeatureCollection",
+      "features": [
+        {
+          "type": "Feature",
+          "properties": {
+            "pcode": "MMR001001",
+            "admin_name": "Yangon East",
+            "admin_level": "3",
+            "pop_est": 185000
+          },
+          "geometry": {
+            "type": "Polygon",
+            "coordinates": [[
+              [96.05, 16.75], [96.05, 16.87], [96.19, 16.87], [96.19, 16.75], [96.05, 16.75]
+            ]]
+          }
+        },
+        {
+          "type": "Feature",
+          "properties": {
+            "pcode": "MMR001002",
+            "admin_name": "Yangon West",
+            "admin_level": "3",
+            "pop_est": 142000
+          },
+          "geometry": {
+            "type": "Polygon",
+            "coordinates": [[
+              [96.19, 16.75], [96.19, 16.87], [96.30, 16.87], [96.30, 16.75], [96.19, 16.75]
+            ]]
+          }
+        }
+      ]
+    };
+
+    function setError(msg) {
+      errorBox.textContent = msg;
+      errorBox.style.display = 'block';
+    }
+    function clearError() {
+      errorBox.textContent = '';
+      errorBox.style.display = 'none';
+    }
+
+    function updateStepClasses() {
+      // Step 1 always active
+      step1.classList.remove('inactive');
+
+      const dataDone = dataRows.length > 0;
+      const geoDone = geoFeatures.length > 0;
+      const coordsDone = !!(latCol && lonCol);
+
+      // Step 2
+      if (dataDone) {
+        step2.classList.remove('inactive');
+      } else {
+        step2.classList.add('inactive');
+      }
+      if (geoDone) {
+        step2.classList.add('completed');
+      } else {
+        step2.classList.remove('completed');
+      }
+
+      // Step 3
+      if (dataDone && geoDone) {
+        step3.classList.remove('inactive');
+      } else {
+        step3.classList.add('inactive');
+      }
+
+      // Step 4
+      if (dataDone && geoDone && coordsDone) {
+        step4.classList.remove('inactive');
+        assignBtn.disabled = processing;
+      } else {
+        step4.classList.add('inactive');
+        assignBtn.disabled = true;
+      }
+
+      // Step 5 visibility handled separately
+      if (dataDone) step1.classList.add('completed'); else step1.classList.remove('completed');
+      if (geoDone) step2.classList.add('completed'); else step2.classList.remove('completed');
+      if (coordsDone) step3.classList.add('completed'); else step3.classList.remove('completed');
+    }
+
+    function renderBadges(container, items) {
+      container.innerHTML = '';
+      if (!items || !items.length) {
+        const span = document.createElement('span');
+        span.className = 'muted';
+        span.style.fontSize = '12px';
+        span.textContent = '(none)';
+        container.appendChild(span);
+        return;
+      }
+      items.forEach(item => {
+        const b = document.createElement('span');
+        b.className = 'badge-col';
+        b.textContent = item;
+        container.appendChild(b);
+      });
+    }
+
+    function populateSelects() {
+      latSel.innerHTML = '<option value="">-- Select latitude column --</option>';
+      lonSel.innerHTML = '<option value="">-- Select longitude column --</option>';
+
+      dataHeaders.forEach(h => {
+        const o1 = document.createElement('option');
+        o1.value = h; o1.textContent = h;
+        latSel.appendChild(o1);
+
+        const o2 = document.createElement('option');
+        o2.value = h; o2.textContent = h;
+        lonSel.appendChild(o2);
+      });
+
+      // Try sensible defaults
+      const latGuess = dataHeaders.find(h => /lat|latitude|y_coord|ycoord/i.test(h));
+      const lonGuess = dataHeaders.find(h => /lon|long|longitude|x_coord|xcoord/i.test(h));
+      if (latGuess) latSel.value = latGuess;
+      if (lonGuess) lonSel.value = lonGuess;
+
+      latCol = latSel.value || '';
+      lonCol = lonSel.value || '';
+
+      latSel.onchange = () => { latCol = latSel.value; updateStepClasses(); };
+      lonSel.onchange = () => { lonCol = lonSel.value; updateStepClasses(); };
+    }
+
+    function showDataInfo() {
+      dataNameEl.textContent = dataFilename;
+      dataFmtEl.textContent = inputFormat.toUpperCase();
+      dataCountEl.textContent = dataRows.length.toLocaleString() + ' rows';
+      dataInfo.style.display = 'flex';
+      dataHeadersWrap.style.display = 'block';
+      renderBadges(dataHeadersList, dataHeaders);
+    }
+
+    function showGeoInfo() {
+      geoNameEl.textContent = geoFilename;
+      geoCountEl.textContent = geoFeatureCount.toLocaleString() + ' features';
+      geoInfo.style.display = 'flex';
+      geoPropsWrap.style.display = 'block';
+      renderBadges(geoPropsList, geoPropKeys);
+    }
+
+    function handleDataFile(file) {
+      clearError();
+      if (!file) return;
+
+      const name = file.name;
+      dataFilename = name;
+      const lower = name.toLowerCase();
+
+      if (lower.endsWith('.csv')) {
+        inputFormat = 'csv';
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            const text = e.target.result;
+            const result = Papa.parse(text, { header: true, skipEmptyLines: 'greedy' });
+            dataRows = result.data || [];
+            // headers from meta or first row
+            dataHeaders = (result.meta && result.meta.fields) ? result.meta.fields.filter(Boolean) : (dataRows.length ? Object.keys(dataRows[0]).filter(k => k !== '__parsed_extra') : []);
+            if (!dataHeaders.length && dataRows.length) {
+              dataHeaders = Object.keys(dataRows[0]).filter(k => k && k !== '__parsed_extra');
+            }
+            showDataInfo();
+            populateSelects();
+            updateStepClasses();
+            // clear downstream
+            clearGeo(false);
+            resetResult();
+          } catch (err) {
+            setError('Failed to parse CSV: ' + (err.message || err));
+          }
+        };
+        reader.onerror = () => setError('Could not read the file.');
+        reader.readAsText(file);
+      } else if (lower.endsWith('.xlsx') || lower.endsWith('.xls')) {
+        inputFormat = lower.endsWith('.xls') && !lower.endsWith('.xlsx') ? 'excel' : 'excel';
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            const ab = e.target.result;
+            const wb = XLSX.read(ab, { type: 'array' });
+            const ws = wb.Sheets[wb.SheetNames[0]];
+            if (!ws) throw new Error('No sheets found');
+
+            // Get headers in order from first row
+            const range = XLSX.utils.decode_range(ws['!ref'] || 'A1:A1');
+            const headers = [];
+            for (let c = range.s.c; c <= range.e.c; c++) {
+              const cellAddr = XLSX.utils.encode_cell({ r: range.s.r, c });
+              const cell = ws[cellAddr];
+              const val = (cell && cell.v != null) ? String(cell.v).trim() : '';
+              headers.push(val || ('Col' + (c + 1)));
+            }
+            dataHeaders = headers;
+
+            dataRows = XLSX.utils.sheet_to_json(ws, { defval: '' }) || [];
+            // Ensure rows use same header keys (xlsx may have transformed some)
+            // If keys differ slightly, we keep the header list we built and rows as-is (they usually match)
+            showDataInfo();
+            populateSelects();
+            updateStepClasses();
+            clearGeo(false);
+            resetResult();
+          } catch (err) {
+            setError('Failed to parse Excel file: ' + (err.message || err));
+          }
+        };
+        reader.onerror = () => setError('Could not read the Excel file.');
+        reader.readAsArrayBuffer(file);
+      } else {
+        setError('Unsupported file type. Please use .csv, .xlsx or .xls');
+      }
+    }
+
+    function handleGeoFile(file) {
+      clearError();
+      if (!file) return;
+
+      const name = file.name;
+      geoFilename = name;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const text = e.target.result;
+          let gj;
+          try {
+            gj = JSON.parse(text);
+          } catch (je) {
+            throw new Error('Invalid JSON in GeoJSON file');
+          }
+
+          let features = [];
+          if (gj.type === 'FeatureCollection') {
+            features = gj.features || [];
+          } else if (Array.isArray(gj)) {
+            features = gj;
+          } else if (gj.type === 'Feature') {
+            features = [gj];
+          } else if (gj.type === 'Polygon' || gj.type === 'MultiPolygon') {
+            features = [{ type: 'Feature', geometry: gj, properties: {} }];
+          } else {
+            throw new Error('GeoJSON must be a FeatureCollection, Feature array, or single polygon feature');
+          }
+
+          geoFeatureCount = features.length;
+
+          // Keep only polygon features for processing
+          geoFeatures = features.filter(f => f && f.geometry && (f.geometry.type === 'Polygon' || f.geometry.type === 'MultiPolygon'));
+
+          // Collect ALL property keys (union, first-seen order) from original features
+          const seen = new Set();
+          geoPropKeys = [];
+          features.forEach(f => {
+            if (f && f.properties && typeof f.properties === 'object') {
+              Object.keys(f.properties).forEach(k => {
+                if (!seen.has(k)) {
+                  seen.add(k);
+                  geoPropKeys.push(k);
+                }
+              });
+            }
+          });
+
+          showGeoInfo();
+          updateStepClasses();
+          resetResult();
+        } catch (err) {
+          geoFeatures = [];
+          geoPropKeys = [];
+          setError('Failed to load GeoJSON: ' + (err.message || err));
+        }
+      };
+      reader.onerror = () => setError('Could not read the GeoJSON file.');
+      reader.readAsText(file);
+    }
+
+    function clearData(alsoClearGeo = true) {
+      dataRows = [];
+      dataHeaders = [];
+      dataFilename = '';
+      inputFormat = 'csv';
+      latCol = '';
+      lonCol = '';
+      dataInfo.style.display = 'none';
+      dataHeadersWrap.style.display = 'none';
+      dataHeadersList.innerHTML = '';
+      latSel.innerHTML = '<option value="">-- Select latitude column --</option>';
+      lonSel.innerHTML = '<option value="">-- Select longitude column --</option>';
+      if (alsoClearGeo) clearGeo(true);
+      resetResult();
+      updateStepClasses();
+    }
+
+    function clearGeo(alsoClearResult = true) {
+      geoFeatures = [];
+      geoPropKeys = [];
+      geoFilename = '';
+      geoFeatureCount = 0;
+      geoInfo.style.display = 'none';
+      geoPropsWrap.style.display = 'none';
+      geoPropsList.innerHTML = '';
+      if (alsoClearResult) resetResult();
+      updateStepClasses();
+    }
+
+    function resetResult() {
+      outputRows = [];
+      lastOutFilename = '';
+      lastOutIsExcel = false;
+      progressSection.style.display = 'none';
+      step5.style.display = 'none';
+      successStats.innerHTML = '';
+      assignBtn.disabled = false;
+      processing = false;
+      updateStepClasses();
+    }
+
+    function updateProgress(pct, label) {
+      const p = Math.max(0, Math.min(100, Math.round(pct)));
+      progressBar.style.width = p + '%';
+      progressPct.textContent = p + '%';
+      if (label) progressLabel.textContent = label;
+    }
+
+    function processChunk(startIdx, chunkSize, total, matchedRef, onChunkDone) {
+      const end = Math.min(startIdx + chunkSize, total);
+      for (let i = startIdx; i < end; i++) {
+        const row = dataRows[i] || {};
+        const latRaw = row[latCol];
+        const lonRaw = row[lonCol];
+        const lat = parseFloat(latRaw);
+        const lon = parseFloat(lonRaw);
+
+        let matchedProps = null;
+        if (!isNaN(lat) && !isNaN(lon) && isFinite(lat) && isFinite(lon)) {
+          try {
+            const pt = turf.point([lon, lat]);
+            for (let j = 0; j < geoFeatures.length; j++) {
+              const f = geoFeatures[j];
+              if (turf.booleanPointInPolygon(pt, f.geometry)) {
+                matchedProps = f.properties || {};
+                matchedRef.count++;
+                break;
+              }
+            }
+          } catch (e) {
+            // ignore bad geometry or point
+          }
+        }
+
+        // Build output row preserving column order
+        const outRow = {};
+        dataHeaders.forEach(h => {
+          outRow[h] = (row && Object.prototype.hasOwnProperty.call(row, h)) ? row[h] : '';
+        });
+        geoPropKeys.forEach(k => {
+          let v = '';
+          if (matchedProps && Object.prototype.hasOwnProperty.call(matchedProps, k)) {
+            const raw = matchedProps[k];
+            v = (raw == null) ? '' : raw;
+          }
+          outRow[k] = v;
+        });
+        outputRows.push(outRow);
+      }
+      onChunkDone(end);
+    }
+
+    function runSpatialJoin() {
+      clearError();
+      if (!dataRows.length || !geoFeatures.length || !latCol || !lonCol) {
+        setError('Please complete Steps 1-3 first.');
+        return;
+      }
+      if (processing) return;
+
+      processing = true;
+      assignBtn.disabled = true;
+      progressSection.style.display = 'block';
+      step5.style.display = 'none';
+      outputRows = [];
+      updateProgress(0, 'Starting...');
+
+      const total = dataRows.length;
+      const CHUNK_SIZE = 500;
+      let idx = 0;
+      const matchedRef = { count: 0 };
+
+      const startTime = Date.now();
+
+      function next() {
+        if (idx >= total) {
+          // finish
+          finishProcessing(total, matchedRef.count, startTime);
+          return;
+        }
+        processChunk(idx, CHUNK_SIZE, total, matchedRef, (newIdx) => {
+          idx = newIdx;
+          const pct = (idx / total) * 100;
+          updateProgress(pct, `Processing ${idx.toLocaleString()} / ${total.toLocaleString()} rows`);
+          // yield to UI
+          setTimeout(next, 0);
+        });
+      }
+      next();
+    }
+
+    function finishProcessing(total, matched, startTime) {
+      const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+      processing = false;
+      progressSection.style.display = 'none';
+      assignBtn.disabled = false;
+
+      const unmatched = total - matched;
+      const base = dataFilename.replace(/\.[^/.]+$/, '');
+      const isExcel = inputFormat === 'excel';
+      lastOutIsExcel = isExcel;
+      lastOutFilename = `${base}_pcoded.${isExcel ? 'xlsx' : 'csv'}`;
+
+      // Generate output file
+      if (isExcel) {
+        try {
+          const fields = [...dataHeaders, ...geoPropKeys];
+          const ws = XLSX.utils.json_to_sheet(outputRows, { header: fields });
+          const wb = XLSX.utils.book_new();
+          XLSX.utils.book_append_sheet(wb, ws, 'Data');
+          XLSX.writeFile(wb, lastOutFilename);
+        } catch (e) {
+          setError('Failed to generate Excel file: ' + (e.message || e));
+          return;
+        }
+      } else {
+        try {
+          const fields = [...dataHeaders, ...geoPropKeys];
+          const csv = Papa.unparse(outputRows, { header: true, columns: fields });
+          const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = lastOutFilename;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        } catch (e) {
+          setError('Failed to generate CSV file: ' + (e.message || e));
+          return;
+        }
+      }
+
+      // Show success
+      step5.style.display = 'block';
+      step5.classList.remove('inactive');
+      successMsg.innerHTML = `Downloaded <strong>${lastOutFilename}</strong><br>${total.toLocaleString()} rows processed in ${elapsed}s.`;
+      successStats.innerHTML = `
+        <div class="stat">${matched.toLocaleString()} matched</div>
+        <div class="stat">${unmatched.toLocaleString()} outside boundaries</div>
+      `;
+
+      updateStepClasses();
+    }
+
+    function downloadResultAgain() {
+      if (!outputRows.length || !lastOutFilename) {
+        setError('No result available to download.');
+        return;
+      }
+      if (lastOutIsExcel) {
+        try {
+          const fields = [...dataHeaders, ...geoPropKeys];
+          const ws = XLSX.utils.json_to_sheet(outputRows, { header: fields });
+          const wb = XLSX.utils.book_new();
+          XLSX.utils.book_append_sheet(wb, ws, 'Data');
+          XLSX.writeFile(wb, lastOutFilename);
+        } catch (e) { setError('Download failed: ' + (e.message || e)); }
+      } else {
+        try {
+          const fields = [...dataHeaders, ...geoPropKeys];
+          const csv = Papa.unparse(outputRows, { header: true, columns: fields });
+          const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = lastOutFilename;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        } catch (e) { setError('Download failed: ' + (e.message || e)); }
+      }
+    }
+
+    function resetAll() {
+      clearData(true);
+      // also reset selects etc already done in clear
+      geoInfo.style.display = 'none';
+      geoPropsWrap.style.display = 'none';
+      step5.style.display = 'none';
+      progressSection.style.display = 'none';
+      errorBox.style.display = 'none';
+      updateStepClasses();
+    }
+
+    function setupDropzone(dropEl, inputEl, handler) {
+      // click
+      dropEl.addEventListener('click', () => inputEl.click());
+
+      // file input
+      inputEl.addEventListener('change', (e) => {
+        if (e.target.files && e.target.files[0]) {
+          handler(e.target.files[0]);
+          // allow re-select same file
+          e.target.value = '';
+        }
+      });
+
+      // drag
+      dropEl.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropEl.classList.add('dragover');
+      });
+      dropEl.addEventListener('dragleave', () => {
+        dropEl.classList.remove('dragover');
+      });
+      dropEl.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropEl.classList.remove('dragover');
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+          handler(e.dataTransfer.files[0]);
+        }
+      });
+    }
+
+    function loadDemoData() {
+      clearError();
+      // Data
+      dataFilename = 'demo_points.csv';
+      inputFormat = 'csv';
+      const parsed = Papa.parse(DEMO_CSV, { header: true, skipEmptyLines: 'greedy' });
+      dataRows = parsed.data || [];
+      dataHeaders = (parsed.meta && parsed.meta.fields) ? parsed.meta.fields.filter(Boolean) : [];
+      if (!dataHeaders.length && dataRows.length) dataHeaders = Object.keys(dataRows[0]).filter(Boolean);
+
+      showDataInfo();
+      populateSelects();
+      updateStepClasses();
+
+      // Geo
+      geoFilename = 'demo_boundaries.geojson';
+      geoFeatureCount = DEMO_GEOJSON.features.length;
+
+      const features = DEMO_GEOJSON.features;
+      geoFeatures = features.filter(f => f && f.geometry && (f.geometry.type === 'Polygon' || f.geometry.type === 'MultiPolygon'));
+
+      const seen = new Set();
+      geoPropKeys = [];
+      features.forEach(f => {
+        if (f && f.properties) {
+          Object.keys(f.properties).forEach(k => {
+            if (!seen.has(k)) { seen.add(k); geoPropKeys.push(k); }
+          });
+        }
+      });
+
+      showGeoInfo();
+      updateStepClasses();
+      resetResult();
+
+      // Auto select lat/lon for demo
+      setTimeout(() => {
+        if (!latCol) latSel.value = 'latitude';
+        if (!lonCol) lonSel.value = 'longitude';
+        latCol = latSel.value;
+        lonCol = lonSel.value;
+        updateStepClasses();
+      }, 30);
+    }
+
+    function init() {
+      // Setup dropzones
+      setupDropzone(dataDrop, dataInput, handleDataFile);
+      setupDropzone(geoDrop, geoInput, handleGeoFile);
+
+      // Initial UI
+      step1.classList.remove('inactive');
+      updateStepClasses();
+
+      // Keyboard nicety: allow Enter on assign if ready
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !assignBtn.disabled && !processing) {
+          const active = !step4.classList.contains('inactive');
+          if (active) runSpatialJoin();
+        }
+      });
+
+      // Make sure CDNs loaded (defensive)
+      if (typeof XLSX === 'undefined' || typeof Papa === 'undefined' || typeof turf === 'undefined') {
+        setTimeout(() => {
+          if (typeof XLSX === 'undefined' || typeof Papa === 'undefined' || typeof turf === 'undefined') {
+            setError('One or more required libraries failed to load from CDN. Please reload the page.');
+          }
+        }, 1500);
+      }
+
+      // Optional: allow dropping files anywhere on page for data/geo (simple heuristic by extension)
+      document.addEventListener('dragover', (e) => e.preventDefault());
+      document.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const f = e.dataTransfer.files && e.dataTransfer.files[0];
+        if (!f) return;
+        const n = f.name.toLowerCase();
+        if (n.endsWith('.csv') || n.endsWith('.xlsx') || n.endsWith('.xls')) {
+          handleDataFile(f);
+        } else if (n.endsWith('.geojson') || n.endsWith('.json')) {
+          handleGeoFile(f);
+        }
+      });
+
+      // Dev hint in console
+      // console.log('%c[pCodes] pcodes-assign ready (client-side only)', 'color:#64748b');
+    }
+
+    // Boot
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  </script>
+</body>
+</html>
