@@ -770,7 +770,7 @@
             for (let c = range.s.c; c <= range.e.c; c++) {
               const cellAddr = XLSX.utils.encode_cell({ r: range.s.r, c });
               const cell = ws[cellAddr];
-              const val = (cell && cell.v != null) ? String(cell.v).trim() : '';
+              const val = (cell && cell.v != null) ? String(cell.v) : '';
               headers.push(val || ('Col' + (c + 1)));
             }
             dataHeaders = headers;
